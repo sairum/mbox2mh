@@ -53,7 +53,6 @@ will produce the following structure in the folder Friends located at the home d
       │   ├── 2
       │   ├── 3
       │   ...
-      ├── maria.msf
       ├── joana
       │   ├── 1
       │   ├── 2
