@@ -1,5 +1,6 @@
 # mbox2mh
 
+> **NOTE**: Before using this software, please **make a backup copy of your Mail** directory! I've used *mbox2mh* extensively without any loss but your mileage may vary! Read the accompanying LICENSE, especially the  **Disclaimer of Warranty** (15), the **Limitation of Liability** (16) and the text that states "This program is distributed in the hope that it will be useful, but **WITHOUT ANY WARRANTY**; without even the implied warranty of **MERCHANTABILITY** or **FITNESS FOR A PARTICULAR PURPOSE**. See the GNU General Public License for more details".
 
 ### Convert thunderbird MBOX structure into MH structure to be read by ClawsMail
 
