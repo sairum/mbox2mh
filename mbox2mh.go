@@ -37,8 +37,9 @@ func processFile( fileName, destdir string) {
      */
 
     if filepath.Ext(fileName) != ".msf" {
-        path := filepath.Join(destdir,fileName)
-        fmt.Printf("Opening %s and writing into %s\n", fileName, path)
+
+        path := filepath.Join(destdir,filepath.Base(fileName))
+        fmt.Printf("Write %s into %s\n", fileName, path )
 
         /*
          * We create a directory with the name of
@@ -145,8 +146,8 @@ func process_dir(srcdir, destdir string) error {
 
     items, err := ioutil.ReadDir(srcdir)
     if err != nil {
-        //fmt.Printf("Error!: %s\n", err)
-        //return err
+        // Probably not a directory! Let's try to process
+        // it as a file
         processFile( srcdir, destdir )
     } else {
 
