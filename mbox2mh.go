@@ -2,9 +2,9 @@ package main
 
 import (
     "fmt"
+    "flag"
     "strings"
     "os"
-    "flag"
     "path/filepath"
     "io/ioutil"
     "log"
@@ -22,12 +22,12 @@ var outfile *os.File
  */
 
 func usage() {
-    fmt.Fprintf(os.Stderr, "usage: mbox2mh <src directory> <dest directory>\n")
+    fmt.Fprintf(os.Stderr, "usage: mbox2mh [-test] <src directory> <dest directory>\n")
     flag.PrintDefaults()
     os.Exit(2)
 }
 
-func processFile( fileName, destdir string) {
+func processFile( fileName, destdir string, test bool) {
 
     /*
      * Check if this is a Thunderbird index file (".msf")
@@ -88,7 +88,14 @@ func processFile( fileName, destdir string) {
              * begining of an email header. Check if 'i' is greater than 0.
              * If it is, it means that a file had been already open for
              * writing so close it and increment 'i'. The variable 'i' holds
-             * the name of a file to write mail text to
+             * the name of a file to write mail text to.
+             *
+             * Note that the '-' on the header may be different. Apparently,
+             * some mail clients write 'MAILER-DEAMON' instead. AFAIK, current
+             * versions of thunderbird don't use this signature but if you get
+             * strange results it may be because of this. Worst than this,
+             * apparently some non-english clients use the worf 'DE' instead
+             * of 'From'! Go figure...
              */
 
             if strings.HasPrefix(line, "From - ") {
@@ -97,7 +104,7 @@ func processFile( fileName, destdir string) {
                 //
                 // "From - Tue Jan 10 22:54:05 2017"
                 //
-                //  so the first line should have seven (7) tokens
+                // so the first line should have seven (7) tokens
                 // with the last one denoting a year which should be
                 // greater than 1970 the year of the beginning of
                 // UNIX time.
@@ -107,14 +114,17 @@ func processFile( fileName, destdir string) {
                 year, _ := strconv.Atoi(s[6])
 
                 if ( ( year > 1969 ) && (s[1] == "-" ) ) {
-
-                    if i > 0 {
+                    if ( i > 0 ) && !test {
                         outfile.Close()
                     }
                     i++
                     f := filepath.Join(path,strconv.Itoa(i))
-                    //fmt.Printf("Write %s in directory %s\n", f, path)
-                    outfile, err = os.Create(f)
+
+                    if !test {
+                        outfile, err = os.Create(f)
+                    } else {
+                        fmt.Printf("Writing %s\n", f)
+                    }
                     if err != nil {
                         //return err
                     }
@@ -122,8 +132,9 @@ func processFile( fileName, destdir string) {
 
             }
             //fmt.Printf(line)
-            _, _ = outfile.WriteString(line+"\n")
-
+            if !test {
+                _, _ = outfile.WriteString(line+"\n")
+            }
         }
 
         outfile.Close()
@@ -142,13 +153,13 @@ func processFile( fileName, destdir string) {
  * Process each entry in the directory hierarchy
  */
 
-func process_dir(srcdir, destdir string) error {
+func process_dir(srcdir, destdir string, test bool) error {
 
     items, err := ioutil.ReadDir(srcdir)
     if err != nil {
         // Probably not a directory! Let's try to process
         // it as a file
-        processFile( srcdir, destdir )
+        processFile( srcdir, destdir, test )
     } else {
 
         for _, item := range items {
@@ -164,9 +175,9 @@ func process_dir(srcdir, destdir string) error {
             if item.IsDir() {
                 dirname := strings.TrimSuffix(item.Name(), ".sbd")
                 newdestdir := filepath.Join(destdir,dirname)
-                process_dir(src, newdestdir)
+                process_dir(src, newdestdir, test)
             } else {
-                processFile( src, destdir )
+                processFile( src, destdir, test )
             }
         }
     }
@@ -174,19 +185,26 @@ func process_dir(srcdir, destdir string) error {
 }
 
 func main() {
+
+    /*
+     * Check if we are testing only!
+     */
+
+    testPtr := flag.Bool("t", false, "a bool, if used no files will be written")
+
     flag.Usage = usage
     flag.Parse()
 
     args := flag.Args()
 
-
-    if len(args) < 2 {
-        fmt.Println("Destination directory is missing.")
+    if len(args) < 1 {
+        usage()
+        //fmt.Println("Source and destination directories are missing.")
         os.Exit(1)
     }
 
-    if len(args) < 1 {
-        fmt.Println("Source and destination directories are missing.")
+    if len(args) < 2 {
+        fmt.Println("Destination directory is missing.")
         os.Exit(1)
     }
 
@@ -215,7 +233,8 @@ func main() {
         os.Exit(1)
     }
 
-    _ = process_dir(srcdir, destdir)
+
+    _ = process_dir(srcdir, destdir, *testPtr)
 
     return
 
