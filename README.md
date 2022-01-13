@@ -28,7 +28,7 @@ Consider the following structure
   │   │   └── pictures.msf
   │   ├── ted.sbd
   │   │   ├── photos
-  │   │   ├── photos.msg
+  │   │   ├── photos.msf
   │   │   └── photos.sbd
   │   │       ├── summer
   │   │       └── summer.msf
