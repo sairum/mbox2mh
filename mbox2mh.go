@@ -22,7 +22,7 @@ var outfile *os.File
  */
 
 func usage() {
-    fmt.Fprintf(os.Stderr, "usage: mbox2mh [-test] <src directory> <dest directory>\n")
+    fmt.Fprintf(os.Stderr, "usage: mbox2mh [-t] <src directory> <dest directory>\n")
     flag.PrintDefaults()
     os.Exit(2)
 }
